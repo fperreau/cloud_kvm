@@ -1,0 +1,51 @@
+#cloud-config
+chpasswd: { expire: False }
+password: Passw0rd!
+timezone: Europe/Paris
+
+# Hostname management
+preserve_hostname: False
+hostname: {{ hostname }}
+fqdn: {{ fqdn }}
+
+# Configure where output will go
+output:
+  all: ">> /var/log/cloud-init.log"
+    
+# configure interaction with ssh server
+ssh_svcname: ssh
+ssh_deletekeys: True
+ssh_genkeytypes: ['rsa', 'ecdsa']
+
+# Install my public ssh key to the first user-defined user configured
+# in cloud.cfg in the template
+ssh_authorized_keys:
+{% for key in ssh_pub_keys %}
+  - {{ key }}
+{% endfor %}
+
+yum_repos:
+  BaseOS:
+    name: Red Hat Enterprise Linux 8 - BaseOS
+    baseurl: file:///media/cdrom/BaseOS/
+    enabled: true
+    gpgcheck: true
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  AppStream:
+    name: Red Hat Enterprise Linux 8 - AppStream
+    baseurl: file:///media/cdrom/AppStream/
+    enabled: true
+    gpgcheck: true
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+#  Epel:
+#    name: Extra Packages for Enterprise Linux 8 - x86_64
+#    baseurl: https://download.fedoraproject.org/pub/epel/8/Everything/x86_64
+#    enabled: true
+#    gpgcheck: true
+#    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
+
+runcmd:
+  - localectl set-keymap fr
+  - touch /etc/cloud/cloud-init.disabled
+
+final_message: "The system is finall up, after $UPTIME seconds"

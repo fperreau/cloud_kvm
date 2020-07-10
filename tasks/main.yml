@@ -1,0 +1,139 @@
+---
+##
+# KVM_CLOUD ROLE
+#
+# Author: F.PERREAU
+##
+
+## KVM + LIBVIRT HOST
+- block:
+
+  ## DOWNLOAD KVM CLOUDINIT IMAGE
+  - name: CHECK CLOUD IMAGE
+    stat:
+      path: "{{ kvm_pool_dir }}/{{ img }}"
+    register: image_exist
+  - name: DOWNLOAD CLOUD IMAGE FROM WEB
+    get_url:
+      url: "{{ url }}"
+      dest: "{{ kvm_pool_dir }}/{{ img }}"
+      owner: libvirt-qemu
+      group: kvm
+      mode: '0660'
+    when: not image_exist.stat.exists
+  - name: REFRESH STORAGE POOL
+    command: virsh pool-refresh {{ storage_pool }}
+    when: not image_exist.stat.exists
+
+  ## CREATE CLOUD-INIT CIDATA
+  - name: "CREATE DIRECTORY {{ kvm_cloud_dir }}/{{ domain }}"
+    file:
+      path: "{{ kvm_cloud_dir }}/{{ domain }}"
+      state: directory
+  - name: CREATE CLOUDINIT CIDATA FILES
+    template:
+      src: "{{ cloud_os }}/{{ item }}"
+      dest: "{{ kvm_cloud_dir }}/{{ domain }}/{{ item }}"
+    with_items: "{{ cidata }}"
+    register: result_cidata
+  - name: CREATE CLOUDINIT CIDATA
+    shell: genisoimage -output {{ domain }}.iso -volid cidata -joliet -r {{ domain }}
+    args:
+      chdir: "{{ kvm_cloud_dir }}"
+    when: result_cidata.changed
+  
+  ## CREATE SYSTEM DISK IMAGE
+  - name: CREATE SYSTEM DISK IMAGE
+    command: |
+      virsh vol-create-as {{ storage_pool }} {{ domain }}-sys.img {{ sys }}G --format qcow2 \
+        --backing-vol {{ img }} --backing-vol-format qcow2
+    args:
+      creates: "{{ kvm_pool_dir }}/{{ domain }}-sys.img"
+  
+  ## CREATE KVM DOMAIN
+  - name: LIST EXISTING VM
+    virt:
+      command: list_vms
+    register: domain_list
+  - name: CREATE KVM INSTANCE
+    command: |
+      virt-install --import --name {{ domain }} --vcpus {{ cpu }} --ram {{ ram|int * 1024 }} \
+        --machine q35 --graphics spice --os-type linux --os-variant generic --boot=hd,cdrom \
+        --pm suspend_to_disk.enabled=no --pm suspend_to_mem.enabled=no \
+        --disk {{ kvm_pool_dir }}/{{ domain }}-sys.img,format=qcow2,bus=virtio \
+        --disk {{ kvm_cloud_dir }}/{{ domain }}.iso,device=cdrom \
+        --network network:default,model=virtio --noautoconsole
+    when: not domain in domain_list.list_vms
+    register: create_domain
+
+  delegate_to: "{{ kvm_hostname }}"
+  become: "{{ kvm_username }}"
+
+## WAITING KVM DOMAIN STARTED
+- name: WAIT FOR CONNECTION
+  wait_for_connection:
+    timeout: "{{ timeout_connection }}"
+
+## CHANGE CDROM 
+- name: CHANGE CDROM
+  command: virsh change-media {{ domain }} sda --source {{ iso }} --update --live --config
+  when: create_domain.changed
+  delegate_to: "{{ kvm_hostname }}"
+  become: "{{ kvm_username }}"
+
+## @CLASS - DEBIAN, REDHAT
+- block:
+  ## WHEN LVM THEN RESIZE LOGICAL VOLUME
+  - name: Resize LVM volumes
+    lvol:
+      vg: "{{ item.vg }}"
+      lv: "{{ item.lv }}"
+      size: "{{ item.size }}"
+      resizefs: "{{ item.resizefs }}"
+    with_items: "{{ resize_lvol }}"
+    when: resize_lvol is defined
+
+  ## UPDATE /ETC/HOSTS
+  - name: UPDATE ETC_HOSTS
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{address}} {{fqdn}} {{hostname}}"
+
+  ## MOUNT /MEDIA/CDROM
+  - name: Create /media/cdrom
+    file:
+      path: /media/cdrom
+      state: directory
+      mode: '0555'
+  - name: Mount CDROM
+    mount:
+      path: /media/cdrom
+      src: /dev/cdrom
+      fstype: iso9660
+      opts: ro
+      state: mounted
+
+  when: class_os != 'WINDOWS'
+
+## REDHAT + CENTOS
+- block:
+#  - name: Add YUM repository
+#    template:
+#      src: "{{ cloud_os }}.repo"
+#      dest: "/etc/yum.repos.d/{{ cloud_os }}.repo"
+  - name: Install MINIMAL packages
+    dnf:
+      name: "{{ PACKAGES_REDHAT }}"
+      state: present
+  - name: Start FIREWALLD
+    service:
+      name: firewalld
+      state: started
+  when: class_os == 'REDHAT'
+
+## COMMON
+- name: Install default packages 
+  package:
+    name: "{{ PACKAGES }}"
+    state: present
+  when: class_os != 'WINDOWS'

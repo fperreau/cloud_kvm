@@ -1,0 +1,88 @@
+---
+##
+# KVM_CLOUD role
+#
+# Author: F.PERREAU
+##
+
+## KVM SERVER
+kvm_hostname: localhost
+kvm_username: perreau
+kvm_pool_dir: /mnt/vm2/kvm-pool
+kvm_cloud_dir: "{{ kvm_pool_dir }}/cloudinit"
+kvm_iso_dir: /mnt/depot/iso
+storage_pool: VM2
+timeout_connection: 60
+
+# TARGET OS - ubuntu, rhel, centos
+cloud_os: rhel    # debian, ubuntu, rhel, fedora, centos
+class_os: "{{ CLOUDINIT[cloud_os].class }}"
+
+ssh_pub_keys:
+- "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCvgICXd1YnPvg6Wr1h9i3YWVWnA+HITFfjZveZz7LPOZh+u2W2+LR3V5krV42cWvByqcBp3ZtaUu0Xiq6g3CktDmrGdh7xfw0BVWehNAnLg+YRtJIFut4N0geGqY5aE0u/lXn40J+819G8rkjFGd/RQYfH7Vx7hi28AeNIUj2djbaD4gH2lo0eU1+eDZxoEy4pZQMkgfd8/qWBvyg7H3OCGdNilmi+y0Edd6K9jzGQmslGE1pli6251l9frDUG61Jsi/1I6zNQyfVR1j9GBDRoWUHnHc0EuSjMErRsrnO9bOlE4dzipK+o5+CWKbmPhUbaulovR35vaDEsa5feqYiR perreau@ibmlx"
+
+## TARGET
+hostname: "{{ inventory_hostname }}"
+fqdn: "{{ hostname }}.fpu.local"
+
+domain: "{{ inventory_hostname }}"
+cpu: "{{ VM[domain].CPU }}"
+ram: "{{ VM[domain].RAM }}"
+sys: "{{ VM[domain].SYS }}"
+dat: "{{ VM[domain].DAT }}"
+
+## HOST = IP_ADDRESS / PREFIX
+host: "{{ VM[domain].IP }}"
+address: "{{ host|ipaddr('address') }}"
+netmask: "{{ host|ipaddr('netmask') }}"
+network: "{{ host|ipaddr('network') }}"
+broadcast: "{{ host|ipaddr('broadcast') }}"
+gateway: "{{ VM[domain].GW }}"
+
+cidata: "{{ CLOUDINIT[cloud_os].cidata }}"
+img: "{{ CLOUDINIT[cloud_os].img }}"
+iso: "{{ kvm_iso_dir }}/{{ CLOUDINIT[cloud_os].iso }}"
+url: "{{ CLOUDINIT[cloud_os].url }}"
+
+## PREREQUISIT
+PACKAGES_REDHAT:
+  - "@Minimal Install"
+  - "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+
+PACKAGES:
+  - open-vm-tools
+  - qemu-guest-agent
+  - byobu
+  - htop 
+  - multitail
+  - nload
+  - tree
+
+## CLOUD-INIT IMAGES
+CLOUDINIT:
+  debian:
+    class: DEBIAN
+    cidata: [ meta-data, user-data ]
+    iso: DEBIAN/debian-10.4.0-amd64-netinst.iso
+    img: ""
+    url: ""
+  ubuntu:
+    class: DEBIAN
+    cidata: [ meta-data, user-data ]
+    iso: UBUNTU/ubuntu-20.04-live-server-amd64.iso
+    img: focal-server-clouding-amd64.img   # focal5.img
+    url: https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+  centos:
+    class: REDHAT
+    cidata: [ meta-data, user-data ]
+    iso: ""
+    img: REDHAT/CentOS-8-x86_64-GenericCloud.qcow2
+    url: https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.1.1911-20200113.3.x86_64.qcow2
+  rhel:
+    class: REDHAT
+    cidata: [ meta-data, user-data ]
+    iso: REDHAT/rhel-8.0-x86_64-dvd.iso
+    img: rhel-8.0-update-3-x86_64-kvm.qcow2
+    url: file:///mnt/depot/iso/CLOUD/rhel-8.0-update-3-x86_64-kvm.qcow2
+  windows:
+    class: WINDOWS
