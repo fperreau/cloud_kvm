@@ -1,0 +1,13 @@
+---
+##
+# CLOUD_KVM SITE
+#
+# Author: F.PERREAU
+##
+
+- name: CloudInit domain example
+  hosts: all
+  gather_facts: no
+  roles:
+    - cloud_kvm
+

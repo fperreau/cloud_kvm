@@ -55,9 +55,11 @@ Those variables define class, cidata, image and iso file used to deploy domain f
 Example Playbook
 ----------------
 
-    - hosts: servers
+    - name: CloudInit domain example
+      hosts: all
+      gather_facts: no
       roles:
-         - cloud_kvm
+        - cloud_kvm
 
 License
 -------
