@@ -1,6 +1,6 @@
 #cloud-config
 chpasswd: { expire: False }
-password: Passw0rd
+password: Passw0rd!
 timezone: Europe/Paris
 
 # Hostname management
