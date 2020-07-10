@@ -2,6 +2,6 @@
 - name: Converge
   hosts: all
   tasks:
-    - name: "Include kvm_cloud"
+    - name: "Include cloud_kvm"
       include_role:
-        name: "kvm_cloud"
+        name: "cloud_kvm"
