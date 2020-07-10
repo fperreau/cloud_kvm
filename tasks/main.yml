@@ -97,7 +97,7 @@
   - name: UPDATE ETC_HOSTS
     lineinfile:
       dest: /etc/hosts
-      line: "{{address}} {{fqdn}} {{hostname}}"
+      line: "{{ address }} {{ fqdn }} {{ hostname }}"
 
   ## MOUNT /MEDIA/CDROM
   - name: Create /media/cdrom
