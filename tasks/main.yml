@@ -37,7 +37,7 @@
     with_items: "{{ cidata }}"
     register: result_cidata
   - name: CREATE CLOUDINIT CIDATA
-    shell: genisoimage -output {{ domain }}.iso -volid cidata -joliet -r {{ domain }}
+    command: genisoimage -output {{ domain }}.iso -volid cidata -joliet -r {{ domain }}
     args:
       chdir: "{{ kvm_cloud_dir }}"
     when: result_cidata.changed
