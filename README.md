@@ -8,7 +8,7 @@ version: 0.1.0
 Requirements
 ------------
 
-Minimum Ansible 2.8, KVM, libvirt 
+Minimum Ansible 2.8, KVM, libvirt
 
 
 Role Variables

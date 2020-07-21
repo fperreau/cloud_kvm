@@ -53,7 +53,7 @@ PACKAGES:
   - open-vm-tools
   - qemu-guest-agent
   - byobu
-  - htop 
+  - htop
   - multitail
   - nload
   - tree

@@ -41,7 +41,7 @@
     args:
       chdir: "{{ kvm_cloud_dir }}"
     when: result_cidata.changed
-  
+
   ## CREATE SYSTEM DISK IMAGE
   - name: CREATE SYSTEM DISK IMAGE
     command: |
@@ -49,7 +49,7 @@
         --backing-vol {{ img }} --backing-vol-format qcow2
     args:
       creates: "{{ kvm_pool_dir }}/{{ domain }}-sys.img"
-  
+
   ## CREATE KVM DOMAIN
   - name: LIST EXISTING VM
     virt:
@@ -74,7 +74,7 @@
   wait_for_connection:
     timeout: "{{ timeout_connection }}"
 
-## CHANGE CDROM 
+## CHANGE CDROM
 - name: CHANGE CDROM
   command: virsh change-media {{ domain }} sda --source {{ iso }} --update --live --config
   when: create_domain.changed
@@ -132,7 +132,7 @@
   when: class_os == 'REDHAT'
 
 ## COMMON
-- name: Install default packages 
+- name: Install default packages
   package:
     name: "{{ PACKAGES }}"
     state: present
