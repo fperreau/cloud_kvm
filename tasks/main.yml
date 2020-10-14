@@ -67,7 +67,7 @@
     register: create_domain
 
   delegate_to: "{{ kvm_hostname }}"
-  become: "{{ kvm_username }}"
+  become_user: "{{ kvm_username }}"
 
 ## WAITING KVM DOMAIN STARTED
 - name: WAIT FOR CONNECTION
@@ -79,7 +79,7 @@
   command: virsh change-media {{ domain }} sda --source {{ iso }} --update --live --config
   when: create_domain.changed
   delegate_to: "{{ kvm_hostname }}"
-  become: "{{ kvm_username }}"
+  become_user: "{{ kvm_username }}"
 
 ## @CLASS - DEBIAN, REDHAT
 - block:

@@ -37,12 +37,12 @@ yum_repos:
     enabled: true
     gpgcheck: true
     gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-#  Epel:
-#    name: Extra Packages for Enterprise Linux 8 - x86_64
-#    baseurl: https://download.fedoraproject.org/pub/epel/8/Everything/x86_64
-#    enabled: true
-#    gpgcheck: true
-#    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
+  Epel:
+    name: Extra Packages for Enterprise Linux 8 - x86_64
+    baseurl: https://download.fedoraproject.org/pub/epel/8/Everything/x86_64
+    enabled: true
+    gpgcheck: true
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
 
 runcmd:
   - localectl set-keymap fr

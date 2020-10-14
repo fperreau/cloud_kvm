@@ -7,7 +7,7 @@
 
 ## KVM SERVER
 kvm_hostname: localhost
-kvm_username: perreau
+kvm_username: root
 kvm_pool_dir: /mnt/vm2/kvm-pool
 kvm_cloud_dir: "{{ kvm_pool_dir }}/cloudinit"
 kvm_iso_dir: /mnt/depot/iso
@@ -47,16 +47,16 @@ url: "{{ CLOUDINIT[cloud_os].url }}"
 ## PREREQUISIT
 PACKAGES_REDHAT:
   - "@Minimal Install"
-  - "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+#  - "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
 
 PACKAGES:
   - open-vm-tools
   - qemu-guest-agent
-  - byobu
-  - htop
-  - multitail
-  - nload
   - tree
+#  - byobu
+#  - htop
+#  - multitail
+#  - nload
 
 ## CLOUD-INIT IMAGES
 CLOUDINIT:
