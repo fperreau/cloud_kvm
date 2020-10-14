@@ -8,5 +8,7 @@
 - name: CloudInit domain example
   hosts: all
   gather_facts: no
+  remote_user: cloud-user
+  become: yes
   roles:
     - cloud_kvm
