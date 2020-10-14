@@ -68,6 +68,7 @@
 
   delegate_to: "{{ kvm_hostname }}"
   become_user: "{{ kvm_username }}"
+  become: yes
 
 ## WAITING KVM DOMAIN STARTED
 - name: WAIT FOR CONNECTION
@@ -80,6 +81,7 @@
   when: create_domain.changed
   delegate_to: "{{ kvm_hostname }}"
   become_user: "{{ kvm_username }}"
+  become: yes
 
 ## @CLASS - DEBIAN, REDHAT
 - block:
