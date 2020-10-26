@@ -124,7 +124,7 @@
 #      src: "{{ cloud_os }}.repo"
 #      dest: "/etc/yum.repos.d/{{ cloud_os }}.repo"
   - name: Install MINIMAL packages
-    dnf:
+    package:
       name: "{{ PACKAGES_REDHAT }}"
       state: present
   - name: Start FIREWALLD
